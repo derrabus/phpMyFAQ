@@ -18,6 +18,9 @@
  * @since     2013-02-05
  */
 
+global $PMF_LANG,
+       $twig;
+
 $twig->loadTemplate('noperm.twig')
     ->display(
         array(

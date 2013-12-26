@@ -17,6 +17,10 @@
  * @since     2003-02-24
  */
 
+global $PMF_LANG,
+       $permission,
+       $twig;
+
 if (!defined('IS_VALID_PHPMYFAQ')) {
     $protocol = 'http';
     if (isset($_SERVER['HTTPS']) && strtoupper($_SERVER['HTTPS']) === 'ON'){

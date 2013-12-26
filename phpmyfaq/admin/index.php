@@ -15,13 +15,16 @@
  * @author    Meikel Katzengreis <meikel@katzengreis.com>
  * @author    Minoru TODA <todam@netjapan.co.jp>
  * @author    Matteo Scaramuccia <matteo@phpmyfaq.de>
+ * @author    Alexander M. Turek <me@derrabus.de>
  * @copyright 2002-2013 phpMyFAQ Team
  * @license   http://www.mozilla.org/MPL/2.0/ Mozilla Public License Version 2.0
  * @link      http://www.phpmyfaq.de
  * @since     2002-09-16
  */
 
+use PMF\Helper\ResponseWrapper;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 define('PMF_ROOT_DIR', dirname(__DIR__));
 
@@ -264,112 +267,120 @@ $twig = new Twig_Environment(
     new Twig_Loader_Filesystem(PMF_ROOT_DIR . '/admin/assets/twig')
 );
 
-// Send headers
-$httpHeader = new PMF_Helper_Http();
-$httpHeader->setContentType('text/html');
-$httpHeader->addHeader();
-
-// Header of the admin page including the navigation
+// Render functions for header/footer
 require 'header.php';
-renderHeader();
-
-// User is authenticated
-if (isset($auth) && in_array(true, $permission)) {
-    if (!is_null($action)) {
-        // the various sections of the admin area
-        switch ($action) {
-            // functions for user administration
-            case 'user':              require 'user.php'; break;
-            case 'group':             require 'group.php'; break;
-            // functions for record administration
-            case 'viewinactive':
-            case 'viewactive':
-            case 'view':              require 'record.show.php'; break;
-            case 'searchfaqs':        require 'record.search.php'; break;
-            case "takequestion":
-            case "editentry":
-            case 'copyentry':
-            case "editpreview":       require 'record.edit.php'; break;
-            case "insertentry":       require 'record.add.php'; break;
-            case "saveentry":         require 'record.save.php'; break;
-            case "delatt":            require 'record.delatt.php'; break;
-            case "question":          require 'record.questions.php'; break;
-            case 'comments':          require 'record.comments.php'; break;
-            // news administraion
-            case 'news':
-            case 'addnews':
-            case 'editnews':
-            case 'savenews':
-            case 'updatenews':
-            case 'deletenews':        require 'news.php'; break;
-            // category administration
-            case 'content':
-            case 'category':
-            case 'savecategory':
-            case 'updatecategory':
-            case 'removecategory':
-            case 'changecategory':
-            case 'pastecategory':     require 'category.main.php'; break;
-            case "addcategory":       require 'category.add.php'; break;
-            case "editcategory":      require 'category.edit.php'; break;
-            case "translatecategory": require 'category.translate.php'; break;
-            case "deletecategory":    require 'category.delete.php'; break;
-            case "cutcategory":       require 'category.cut.php'; break;
-            case "movecategory":      require 'category.move.php'; break;
-            case "showcategory":      require 'category.showstructure.php'; break;
-            // glossary
-            case 'glossary':
-            case 'saveglossary':
-            case 'updateglossary':
-            case 'deleteglossary':    require 'glossary.main.php'; break;
-            case 'addglossary':       require 'glossary.add.php'; break;
-            case 'editglossary':      require 'glossary.edit.php'; break;
-            // functions for password administration
-            case "passwd":            require 'pwd.change.php'; break;
-            // functions for session administration
-            case 'adminlog':
-            case 'deleteadminlog':    require 'stat.adminlog.php'; break;
-            case "viewsessions":      require 'stat.main.php'; break;
-            case "sessionbrowse":     require 'stat.browser.php'; break;
-            case "viewsession":       require 'stat.show.php'; break;
-            case "statistics":        require 'stat.ratings.php'; break;
-            case "searchstats":       require 'stat.search.php'; break;
-            // Reports
-            case 'reports':           require 'report.main.php'; break;
-            case 'reportview':        require 'report.view.php'; break;
-            // fConfig administration
-            case 'config':            require 'configuration.php'; break;
-            case 'system':            require 'system.php'; break;
-            case 'updateinstance':
-            case 'instances':         require 'instances.php'; break;
-            case 'editinstance':      require 'instances.edit.php'; break;
-            case 'stopwordsconfig':   require 'stopwordsconfig.main.php'; break;
-            // functions for backup administration
-            case 'backup':            require 'backup.main.php'; break;
-            case 'restore':           require 'backup.import.php'; break;
-            // functions for FAQ export
-            case "export":            require 'export.main.php'; break;
-            // translation tools
-            case "transedit":         require 'trans.edit.php'; break;
-            case "translist":         require 'trans.list.php'; break;
-            case "transadd":          require 'trans.add.php'; break;
-            // attachment administration 
-            case "attachments":       require "att.main.php"; break;
-            
-            default:                  echo "Dave, this conversation can serve no purpose anymore. Goodbye."; break;
-        }
-    } else {
-        require 'dashboard.php';
-    }
-// User is authenticated, but has no rights
-} elseif (isset($auth) && !in_array(true, $permission)) {
-    require 'noperm.php';
-// User is NOT authenticated
-} else {
-    require 'loginform.php';
-}
-
 require 'footer.php';
-renderFooter();
+
+$renderCallback = function()
+{
+    global $action, $auth, $permission;
+
+    // Header of the admin page including the navigation
+    renderHeader();
+
+    // User is authenticated
+    if (isset($auth) && in_array(true, $permission)) {
+        if (!is_null($action)) {
+            // the various sections of the admin area
+            switch ($action) {
+                // functions for user administration
+                case 'user':              require 'user.php'; break;
+                case 'group':             require 'group.php'; break;
+                // functions for record administration
+                case 'viewinactive':
+                case 'viewactive':
+                case 'view':              require 'record.show.php'; break;
+                case 'searchfaqs':        require 'record.search.php'; break;
+                case "takequestion":
+                case "editentry":
+                case 'copyentry':
+                case "editpreview":       require 'record.edit.php'; break;
+                case "insertentry":       require 'record.add.php'; break;
+                case "saveentry":         require 'record.save.php'; break;
+                case "delatt":            require 'record.delatt.php'; break;
+                case "question":          require 'record.questions.php'; break;
+                case 'comments':          require 'record.comments.php'; break;
+                // news administraion
+                case 'news':
+                case 'addnews':
+                case 'editnews':
+                case 'savenews':
+                case 'updatenews':
+                case 'deletenews':        require 'news.php'; break;
+                // category administration
+                case 'content':
+                case 'category':
+                case 'savecategory':
+                case 'updatecategory':
+                case 'removecategory':
+                case 'changecategory':
+                case 'pastecategory':     require 'category.main.php'; break;
+                case "addcategory":       require 'category.add.php'; break;
+                case "editcategory":      require 'category.edit.php'; break;
+                case "translatecategory": require 'category.translate.php'; break;
+                case "deletecategory":    require 'category.delete.php'; break;
+                case "cutcategory":       require 'category.cut.php'; break;
+                case "movecategory":      require 'category.move.php'; break;
+                case "showcategory":      require 'category.showstructure.php'; break;
+                // glossary
+                case 'glossary':
+                case 'saveglossary':
+                case 'updateglossary':
+                case 'deleteglossary':    require 'glossary.main.php'; break;
+                case 'addglossary':       require 'glossary.add.php'; break;
+                case 'editglossary':      require 'glossary.edit.php'; break;
+                // functions for password administration
+                case "passwd":            require 'pwd.change.php'; break;
+                // functions for session administration
+                case 'adminlog':
+                case 'deleteadminlog':    require 'stat.adminlog.php'; break;
+                case "viewsessions":      require 'stat.main.php'; break;
+                case "sessionbrowse":     require 'stat.browser.php'; break;
+                case "viewsession":       require 'stat.show.php'; break;
+                case "statistics":        require 'stat.ratings.php'; break;
+                case "searchstats":       require 'stat.search.php'; break;
+                // Reports
+                case 'reports':           require 'report.main.php'; break;
+                case 'reportview':        require 'report.view.php'; break;
+                // fConfig administration
+                case 'config':            require 'configuration.php'; break;
+                case 'system':            require 'system.php'; break;
+                case 'updateinstance':
+                case 'instances':         require 'instances.php'; break;
+                case 'editinstance':      require 'instances.edit.php'; break;
+                case 'stopwordsconfig':   require 'stopwordsconfig.main.php'; break;
+                // functions for backup administration
+                case 'backup':            require 'backup.main.php'; break;
+                case 'restore':           require 'backup.import.php'; break;
+                // functions for FAQ export
+                case "export":            require 'export.main.php'; break;
+                // translation tools
+                case "transedit":         require 'trans.edit.php'; break;
+                case "translist":         require 'trans.list.php'; break;
+                case "transadd":          require 'trans.add.php'; break;
+                // attachment administration
+                case "attachments":       require "att.main.php"; break;
+
+                default:                  echo "Dave, this conversation can serve no purpose anymore. Goodbye."; break;
+            }
+        } else {
+            require 'dashboard.php';
+        }
+    // User is authenticated, but has no rights
+    } elseif (isset($auth) && !in_array(true, $permission)) {
+        require 'noperm.php';
+    // User is NOT authenticated
+    } else {
+        require 'loginform.php';
+    }
+
+    renderFooter();
+};
+
+$response = StreamedResponse::create($renderCallback);
+$wrapper = new ResponseWrapper($response);
+$wrapper->addContentTypeHeader('text/html');
+$wrapper->addCommonHeaders();
+$response->send();
 
 $faqConfig->getDb()->close();

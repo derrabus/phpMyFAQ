@@ -18,6 +18,10 @@
  * @since     2013-02-05
  */
 
+global $PMF_LANG,
+       $faqConfig,
+       $twig;
+
 $templateVars = array(
     'PMF_LANG'             => $PMF_LANG,
     'displayError'         => false,

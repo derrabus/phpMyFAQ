@@ -18,6 +18,11 @@
  * @since     2013-01-02
  */
 
+global $PMF_LANG,
+       $faqConfig,
+       $permission,
+       $twig;
+
 if (!defined('IS_VALID_PHPMYFAQ')) {
     header('Location: http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']));
     exit();
