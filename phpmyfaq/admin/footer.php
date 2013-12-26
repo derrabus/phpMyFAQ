@@ -27,48 +27,55 @@ if (!defined('IS_VALID_PHPMYFAQ')) {
     exit();
 }
 
-$templateVars = array(
-    'PMF_LANG'            => $PMF_LANG,
-    'debugInformation'    => DEBUG ? $faqConfig->getDb()->log() : '',
-    'formAction'          => 'index.php' . (isset($action) ? '?action=' . $action : ''),
-    'isAuthenticated'     => isset($auth),
-    'languageSelector'    => PMF_Language::selectLanguages($LANGCODE, true),
-    'pmfVersion'          => $faqConfig->get('main.currentVersion'),
-    'sessionKeepaliveUrl' => 'session.keepalive.php?lang=' . $LANGCODE,
-    'userDisplayName'     => isset($user) ? $user->userdata->get('display_name') : '',
-    'userId'              => isset($user) ? $user->userdata->get('user_id') : ''
-);
+function renderFooter()
+{
+    global $LANGCODE,
+           $PMF_LANG,
+           $action,
+           $faqConfig,
+           $twig;
 
-$wysiwygActions = array(
-    'takequestion',
-    'editentry',
-    'editpreview',
-    'addnews',
-    'editnews',
-    'copyentry'
-);
+    $templateVars = array(
+        'PMF_LANG'            => $PMF_LANG,
+        'debugInformation'    => DEBUG ? $faqConfig->getDb()->log() : '',
+        'formAction'          => 'index.php' . (isset($action) ? '?action=' . $action : ''),
+        'isAuthenticated'     => isset($auth),
+        'languageSelector'    => PMF_Language::selectLanguages($LANGCODE, true),
+        'pmfVersion'          => $faqConfig->get('main.currentVersion'),
+        'sessionKeepaliveUrl' => 'session.keepalive.php?lang=' . $LANGCODE,
+        'userDisplayName'     => isset($user) ? $user->userdata->get('display_name') : '',
+        'userId'              => isset($user) ? $user->userdata->get('user_id') : ''
+    );
 
-if (isset($auth) && in_array($action, $wysiwygActions) && $faqConfig->get('main.enableWysiwygEditor')) {
-    $templateVars['wysiwygActive']     = true;
-    $templateVars['tinyMceContentCss'] = '../assets/template/' . PMF_Template::getTplSetName() . '/css/style.css';
-    $templateVars['tinyMceLanguage']   = PMF_Language::isASupportedTinyMCELanguage($LANGCODE) ? $LANGCODE : 'en';
-    if (('addnews' == $action || 'editnews' == $action)) {
-        $templateVars['tinyMceElements'] = 'news';
-        $templateVars['tinyMceSave']     = '';
+    $wysiwygActions = array(
+        'takequestion',
+        'editentry',
+        'editpreview',
+        'addnews',
+        'editnews',
+        'copyentry'
+    );
+
+    if (isset($auth) && in_array($action, $wysiwygActions) && $faqConfig->get('main.enableWysiwygEditor')) {
+        $templateVars['wysiwygActive']     = true;
+        $templateVars['tinyMceContentCss'] = '../assets/template/' . PMF_Template::getTplSetName() . '/css/style.css';
+        $templateVars['tinyMceLanguage']   = PMF_Language::isASupportedTinyMCELanguage($LANGCODE) ? $LANGCODE : 'en';
+        if (('addnews' == $action || 'editnews' == $action)) {
+            $templateVars['tinyMceElements'] = 'news';
+            $templateVars['tinyMceSave']     = '';
+        } else {
+            $templateVars['tinyMceElements'] = 'answer';
+            $templateVars['tinyMceSave']     = 'save,|,';
+        }
+        if (isset($faqData['id']) && $faqData['id'] == 0) {
+            $templateVars['tinyMceSaveCallbackAction'] = 'recordAdd';
+        } else {
+            $templateVars['tinyMceSaveCallbackAction'] = 'recordSave';
+        }
     } else {
-        $templateVars['tinyMceElements'] = 'answer';
-        $templateVars['tinyMceSave']     = 'save,|,';
+        $templateVars['wysiwygActive'] = false;
     }
-    if (isset($faqData['id']) && $faqData['id'] == 0) {
-        $templateVars['tinyMceSaveCallbackAction'] = 'recordAdd';
-    } else {
-        $templateVars['tinyMceSaveCallbackAction'] = 'recordSave';
-    }
-} else {
-    $templateVars['wysiwygActive'] = false;
+
+    $twig->loadTemplate('footer.twig')
+        ->display($templateVars);
 }
-
-$twig->loadTemplate('footer.twig')
-    ->display($templateVars);
-
-unset($templateVars, $wysiwygActions);

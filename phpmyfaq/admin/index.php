@@ -264,8 +264,14 @@ $twig = new Twig_Environment(
     new Twig_Loader_Filesystem(PMF_ROOT_DIR . '/admin/assets/twig')
 );
 
+// Send headers
+$httpHeader = new PMF_Helper_Http();
+$httpHeader->setContentType('text/html');
+$httpHeader->addHeader();
+
 // Header of the admin page including the navigation
 require 'header.php';
+renderHeader();
 
 // User is authenticated
 if (isset($auth) && in_array(true, $permission)) {
@@ -364,5 +370,6 @@ if (isset($auth) && in_array(true, $permission)) {
 }
 
 require 'footer.php';
+renderFooter();
 
 $faqConfig->getDb()->close();
