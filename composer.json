@@ -63,6 +63,9 @@
         "phpunit/dbunit":  "*"
     },
     "minimum-stability": "stable",
+    "autoload": {
+        "psr-0": {"PMF\\": "phpmyfaq/inc/"}
+    },
     "scripts": {
         "post-install-cmd": [
             "scripts/moveVendors.sh"
