@@ -43,6 +43,8 @@ class PMF_Filter
      * @param  mixed   $default       Default value
      *
      * @return mixed
+     *
+     * @deprecated Use {@link \PMF\RequestFilter::filterInput()} instead
      */
     public static function filterInput ($type, $variable_name, $filter, $default = null)
     {

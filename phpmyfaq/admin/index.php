@@ -23,7 +23,9 @@
  */
 
 use PMF\Helper\ResponseWrapper;
+use PMF\RequestFilter;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 define('PMF_ROOT_DIR', dirname(__DIR__));
@@ -98,20 +100,24 @@ if (function_exists('mb_language') && in_array($mbLanguage, $validMbStrings)) {
     mb_internal_encoding('utf-8');
 }
 
+// Request and filter
+$request = Request::createFromGlobals();
+$requestFilter = new RequestFilter($request);
+
 //
 // Get user action
 //
-$action = PMF_Filter::filterInput(INPUT_GET, 'action', FILTER_SANITIZE_STRING);
+$action = $requestFilter->filterInput(INPUT_GET, 'action', FILTER_SANITIZE_STRING);
 if (is_null($action)) {
-    $action = PMF_Filter::filterInput(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
+    $action = $requestFilter->filterInput(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
 }
 
 // authenticate current user
 $auth        = null;
 $error       = '';
-$faqusername = PMF_Filter::filterInput(INPUT_POST, 'faqusername', FILTER_SANITIZE_STRING);
-$faqpassword = PMF_Filter::filterInput(INPUT_POST, 'faqpassword', FILTER_SANITIZE_STRING);
-$faqremember = PMF_Filter::filterInput(INPUT_POST, 'faqrememberme', FILTER_SANITIZE_STRING);
+$faqusername = $requestFilter->filterInput(INPUT_POST, 'faqusername', FILTER_SANITIZE_STRING);
+$faqpassword = $requestFilter->filterInput(INPUT_POST, 'faqpassword', FILTER_SANITIZE_STRING);
+$faqremember = $requestFilter->filterInput(INPUT_POST, 'faqrememberme', FILTER_SANITIZE_STRING);
 
 // Set username via SSO
 if ($faqConfig->get('security.ssoSupport') && isset($_SERVER['REMOTE_USER'])) {
@@ -206,9 +212,9 @@ if (isset($user) && is_object($user)) {
 
 //
 // Get action from _GET and _POST first
-$_ajax = PMF_Filter::filterInput(INPUT_GET, 'ajax', FILTER_SANITIZE_STRING);
+$_ajax = $requestFilter->filterInput(INPUT_GET, 'ajax', FILTER_SANITIZE_STRING);
 if (is_null($_ajax)) {
-    $_ajax = PMF_Filter::filterInput(INPUT_POST, 'ajax', FILTER_SANITIZE_STRING);
+    $_ajax = $requestFilter->filterInput(INPUT_POST, 'ajax', FILTER_SANITIZE_STRING);
 }
 
 // if performing AJAX operation, needs to branch before header.php
