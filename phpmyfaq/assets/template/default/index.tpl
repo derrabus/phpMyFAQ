@@ -50,7 +50,6 @@
             <a class="navbar-brand" title="{header}" href="{faqHome}">{header}</a>
         </div>
 
-        <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="pmf-navbar-collapse">
             <ul class="nav navbar-nav">
                 <li class="{activeQuickfind}">{showInstantResponse}</li>
@@ -89,7 +88,9 @@
                     <li class="home">{backToHome}</li>
                     <li>{allCategories}</li>
                     <li class="divider-horizontal"></li>
+                    [categoryListSection]
                     {showCategories}
+                    [/categoryListSection]
                 </ul>
                 <div class="users-online">
                     <small>{userOnline}</small>
@@ -170,6 +171,19 @@
             </div>
         </div>
     </div>
+
+    [debugMode]
+    <div class="container debug-mode">
+        <h3>DEBUG INFORMATION</h3>
+        <hr>
+        <h4>EXCEPTIONS</h4>
+        {debugExceptions}
+        <hr>
+        <h4>DATABASE QUERIES</h4>
+        {debugQueries}
+    </div>
+    [/debugMode]
+
 </footer>
 
 </body>

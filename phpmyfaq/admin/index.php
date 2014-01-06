@@ -2,7 +2,7 @@
 /**
  * The main admin backend index file
  *
- * PHP Version 5.3
+ * PHP Version 5.4
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License,
  * v. 2.0. If a copy of the MPL was not distributed with this file, You can
@@ -16,7 +16,7 @@
  * @author    Minoru TODA <todam@netjapan.co.jp>
  * @author    Matteo Scaramuccia <matteo@phpmyfaq.de>
  * @author    Alexander M. Turek <me@derrabus.de>
- * @copyright 2002-2013 phpMyFAQ Team
+ * @copyright 2002-2014 phpMyFAQ Team
  * @license   http://www.mozilla.org/MPL/2.0/ Mozilla Public License Version 2.0
  * @link      http://www.phpmyfaq.de
  * @since     2002-09-16
@@ -169,7 +169,7 @@ if (!is_null($faqusername) && !is_null($faqpassword)) {
 }
 
 // get user rights
-$permission = array();
+$permission = [];
 if (isset($auth)) {
     // read all rights, set them FALSE
     $allRights = $user->perm->getAllRightsData();
